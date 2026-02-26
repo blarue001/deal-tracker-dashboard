@@ -1016,18 +1016,29 @@
         let supabaseClient = null;
         
         function initSupabase() {
-            if (supabaseClient) return; // Already initialized
-            const SUPABASE_URL = 'https://cchaqbugycigjbstrtqk.supabase.co';
-            const SUPABASE_ANON_KEY = 'sb_publishable_UUX-segf-KKYNWcqs_DwlA_iUKBT61Q';
-            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            if (supabaseClient) return;
+            try {
+                const SUPABASE_URL = 'https://cchaqbugycigjbstrtqk.supabase.co';
+                const SUPABASE_ANON_KEY = 'sb_publishable_UUX-segf-KKYNWcqs_DwlA_iUKBT61Q';
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            } catch (e) {
+                console.log('Supabase init skipped, using local data');
+            }
         }
         let deals = [];
         
         // Load deals from Supabase on page load
         async function loadDealsFromSupabase() {
             initSupabase();
-            console.log('Loading deals from Supabase...');
+            console.log('Loading deals...');
             try {
+                if (!supabaseClient) {
+                    console.log('Supabase not available, loading sample data');
+                    loadSampleData();
+                    renderDashboard();
+                    return;
+                }
+                
                 const { data, error } = await supabaseClient
                     .from('deals')
                     .select('*');
@@ -1065,7 +1076,9 @@
                 renderDashboard();
             } catch (error) {
                 console.error('Error loading deals:', error);
+                console.log('Falling back to sample data');
                 loadSampleData();
+                renderDashboard();
             }
         }
 
@@ -1665,7 +1678,7 @@
             // Retainer Attachment Rate
             const closedProjectCount = projects.filter(d => d.status === 'closed-project').length;
             const attachedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
-            const attachmentRate = closedProjectCount > 0 ? Math.round(attachedRetainers / closedProjectCount * 100) : 0;
+            const attachmentRate = closedProjectCount > 0 ? Math.min(100, Math.round(attachedRetainers / closedProjectCount * 100)) : 0;
             const attachmentEl = document.getElementById('attachment-rate');
             if (attachmentEl) attachmentEl.textContent = attachmentRate + '%';
             
