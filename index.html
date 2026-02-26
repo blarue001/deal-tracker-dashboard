@@ -1608,7 +1608,7 @@
             // Win rate: Projects completed to retainers signed conversion
             const completedProjects = projects.filter(d => d.status === 'closed-project').length;
             const signedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
-            const winRate = completedProjects > 0 ? Math.round(signedRetainers / completedProjects * 100) : 0;
+            const winRate = completedProjects > 0 ? Math.min(100, Math.round(signedRetainers / completedProjects * 100)) : 0;
             const winRateEl = document.getElementById('metric-winrate');
             if (winRateEl) winRateEl.textContent = winRate + '%';
 
@@ -1857,7 +1857,7 @@
             sources.forEach(src => {
                 const srcProjects = projects.filter(p => p.source === src);
                 const srcClosed = srcProjects.filter(p => p.status === 'closed-project');
-                const winRate = srcProjects.length > 0 ? Math.round(srcClosed.length / srcProjects.length * 100) : 0;
+                const winRate = srcProjects.length > 0 ? Math.min(100, Math.round(srcClosed.length / srcProjects.length * 100)) : 0;
                 const el = document.getElementById(`src-${src}`);
                 if (el) el.textContent = winRate + '%';
             });
