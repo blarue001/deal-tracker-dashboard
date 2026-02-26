@@ -1334,9 +1334,7 @@
                         next_step_date: deal.nextStepDate,
                         next_step_notes: deal.nextStepNotes,
                         decision_maker: deal.dm,
-                        project_type: deal.projectType,
-                        end_date: deal.endDate,
-                        user_id: 'anonymous-user' // Default for anonymous access
+                        project_type: deal.projectType
                     };
                     
                     if (deal.id && typeof deal.id === 'number') {
