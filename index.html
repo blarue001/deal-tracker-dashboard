@@ -1022,6 +1022,11 @@
                 const SUPABASE_URL = 'https://cchaqbugycigjbstrtqk.supabase.co';
                 const SUPABASE_ANON_KEY = 'sb_publishable_UUX-segf-KKYNWcqs_DwlA_iUKBT61Q';
                 supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                // Sign in anonymously to allow writes
+                supabaseClient.auth.signInAnonymously().catch(err => {
+                    console.log('Anonymous sign-in error (non-blocking):', err);
+                });
             } catch (e) {
                 console.log('Supabase init skipped, using local data');
             }
