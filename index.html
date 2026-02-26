@@ -1335,7 +1335,8 @@
                         next_step_notes: deal.nextStepNotes,
                         decision_maker: deal.dm,
                         project_type: deal.projectType,
-                        end_date: deal.endDate
+                        end_date: deal.endDate,
+                        user_id: 'anonymous-user' // Default for anonymous access
                     };
                     
                     if (deal.id && typeof deal.id === 'number') {
@@ -1346,12 +1347,15 @@
                             .eq('id', deal.id);
                         if (error) throw error;
                     } else {
-                        // Insert new
+                        // Insert new - don't require user_id for anonymous access
                         const { data, error } = await supabaseClient
                             .from('deals')
                             .insert([dealData])
                             .select();
-                        if (error) throw error;
+                        if (error) {
+                            console.error('Insert error details:', error);
+                            throw error;
+                        }
                         if (data && data[0]) {
                             deal.id = data[0].id;
                         }
@@ -1679,7 +1683,7 @@
             // Retainer Attachment Rate
             const closedProjectCount = projects.filter(d => d.status === 'closed-project').length;
             const attachedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
-            const winRate = completedProjects > 0 ? Math.min(100, Math.round(signedRetainers / completedProjects * 100)) : 0;
+            const attachmentRate = closedProjectCount > 0 ? Math.min(100, Math.round(attachedRetainers / closedProjectCount * 100)) : 0;
             const attachmentEl = document.getElementById('attachment-rate');
             if (attachmentEl) attachmentEl.textContent = attachmentRate + '%';
             
