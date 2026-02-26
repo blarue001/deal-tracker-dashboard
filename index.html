@@ -1324,17 +1324,17 @@
                         company: deal.company,
                         type: deal.type,
                         status: deal.status,
-                        value: deal.value,
-                        probability: deal.probability,
-                        potential_retainer: deal.potentialRetainer,
-                        source: deal.source,
-                        pain_point: deal.pain,
-                        close_date: deal.date,
-                        start_date: deal.startDate,
-                        next_step_date: deal.nextStepDate,
-                        next_step_notes: deal.nextStepNotes,
-                        decision_maker: deal.dm,
-                        project_type: deal.projectType
+                        value: deal.value || null,
+                        probability: deal.probability || null,
+                        potential_retainer: deal.potentialRetainer || null,
+                        source: deal.source || null,
+                        pain_point: deal.pain || null,
+                        close_date: deal.date || null,
+                        start_date: deal.startDate || null,
+                        next_step_date: deal.nextStepDate || null,
+                        next_step_notes: deal.nextStepNotes || null,
+                        decision_maker: deal.dm || null,
+                        project_type: deal.projectType || null
                     };
                     
                     if (deal.id && typeof deal.id === 'number') {
@@ -1343,15 +1343,19 @@
                             .from('deals')
                             .update(dealData)
                             .eq('id', deal.id);
-                        if (error) throw error;
+                        if (error) {
+                            console.error('Supabase update error:', error);
+                            throw error;
+                        }
                     } else {
-                        // Insert new - don't require user_id for anonymous access
+                        // Insert new
                         const { data, error } = await supabaseClient
                             .from('deals')
                             .insert([dealData])
                             .select();
                         if (error) {
-                            console.error('Insert error details:', error);
+                            console.error('Supabase insert error details:', error);
+                            console.error('Attempted to save:', dealData);
                             throw error;
                         }
                         if (data && data[0]) {
