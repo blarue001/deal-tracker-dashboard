@@ -1679,7 +1679,7 @@
             // Retainer Attachment Rate
             const closedProjectCount = projects.filter(d => d.status === 'closed-project').length;
             const attachedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
-            const attachmentRate = closedProjectCount > 0 ? Math.min(100, Math.round(attachedRetainers / closedProjectCount * 100)) : 0;
+            const winRate = completedProjects > 0 ? Math.min(100, Math.round(signedRetainers / completedProjects * 100)) : 0;
             const attachmentEl = document.getElementById('attachment-rate');
             if (attachmentEl) attachmentEl.textContent = attachmentRate + '%';
             
