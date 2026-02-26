@@ -1,0 +1,2154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deal Tracker - Projects & Retainers</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif;
+            background: linear-gradient(135deg, #003366 0%, #1a5fa0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: white;
+            color: #003366;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 4px solid #D4AF37;
+        }
+
+        header img {
+            height: 120px;
+            width: auto;
+        }
+
+        .header-content h1 {
+            font-size: 36px;
+            margin-bottom: 5px;
+        }
+
+        .header-content p {
+            opacity: 0.9;
+            font-size: 18px;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #003366;
+            border-bottom-color: #003366;
+            background: white;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 1600px) {
+            .metrics-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, #003366 0%, #1a5fa0 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .metric-card h3 {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-card .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .metric-card .subtext {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background: #003366;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #1a5fa0;
+            transform: translateY(-2px);
+        }
+
+        button.secondary {
+            background: #D4AF37;
+            color: #003366;
+            font-weight: 600;
+        }
+
+        button.secondary:hover {
+            background: #E8C547;
+        }
+
+        .deals-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .deals-table thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .deals-table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .deals-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 13px;
+        }
+
+        .deals-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-lead {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-discovery {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .status-proposal {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
+        .status-negotiation {
+            background: #fce4ec;
+            color: #c2185b;
+        }
+
+        .status-closed-project {
+            background: #e8f5e9;
+            color: #388e3c;
+        }
+
+        .status-retainer {
+            background: #e0f2f1;
+            color: #00796b;
+        }
+
+        .summary-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #003366;
+        }
+
+        .summary-card h3 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+            text-transform: uppercase;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .summary-row .label {
+            color: #666;
+        }
+
+        .summary-row .value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pipeline-stage {
+            margin-bottom: 30px;
+        }
+
+        .stage-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #333;
+            color: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .stage-count {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .stage-guidance {
+            background: #FFF9E6;
+            border-left: 3px solid #D4AF37;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.6;
+            font-weight: 600;
+        }
+
+        .deal-item {
+            padding: 15px;
+            background: white;
+            border-left: 4px solid #003366;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .deal-item input,
+        .deal-item select {
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .deal-item input:focus,
+        .deal-item select:focus {
+            outline: none;
+            border-color: #003366;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .deal-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .deal-row.full {
+            width: 100%;
+            display: flex;
+        }
+
+        .deal-row.full .form-field {
+            flex: 1;
+        }
+
+        .deal-row.two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .deal-row.three-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .deal-row.four-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-size: 10px;
+            color: #999;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            width: 100%;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #003366;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .form-actions button {
+            flex: 1;
+        }
+
+        .close-btn {
+            float: right;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            background: none;
+            border: none;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        .close-btn:hover {
+            color: #333;
+            background: none;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <img src="data:image/jpeg;base64,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2AUAAAAAAAEFNgQUAAAAAAAA2A2RQAAAAAAAAAAAAAABFJBJCQAABUUAAAAAAA2ADsAAAAAAAANgA2AAAAAAAAAA2AAAAAAAAAANgAAAAAAAAAAA2AAAAAAAAAANgAAAAAAAAAAA2AAAAAAAAAA2AAAAAAAAAA2NgA2AAAAAAAAAAAAAAAAAARQDY2AAAAAAAAADY2AAAAAAAAAAAAAAAAAAEkCQADzgAvaigAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIsgJJBIASACooAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgCgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkhIAAAqKAAAAAAAAABsBsAAAAAAAAigAAAAAAAAIbLsAigAQAAAAAEpKmwCbLsbAAAAAAAAAIuxsBsAAAAAAACAoIuwAAAAAAAIpsCQuwbAbAAAAAAAbAhsbKAAAAAAAACCpsBsKAbAAAAAAIpsCGy7AGwAAAAAAAIbLsAigAAAAAAAguwIoAAAAAAAAAhspsAAAAASAJISAQAAqKAAAAAAAAAAAAAAAABsbABsAAAAAAAAbABsAAAAAAAAACKAAAAAAAAAGwAAAAAAAAAAABsAAAAAAAAAGwAGwAAAAAAAGxsAGxsAAAAAAAAAAAAAAAAABsAAAGwAAAAAAAGxsAGwAAAAAAAAABsAGwAAAAAAABsAGwAAAAABIAgSgKAAqQoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAJIEAdoAKIoAAAAAAAAAAAAAAAAAAAAAAIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABIAAAAAAAAASAAAAAAAAAAAAAAAAAAAAAAbAAAAAAAAAAAAigAAAAAAA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EA2AUAAAAAAADYARUXYAAAAAAAAEDZQRQAAAAAAARUA2U2ANgAAAAAAAENlAAAAAAAJAEFABIUAAAAAABNjZdgRTYBFAAAAABFANiQ2AAAAAABJO0kA7SQAVFAAAAAAA2AAAAAAAAAARQAAAAAAAADYADY2AAAAAAAA2AAAAAAAAAAAAADYAAAAAAAA2AAAAAAAAAAADYAAAAAAAAAA2ADY2AAAAAAAAAA2AAAAAAAAAA2ADYAAAAAAAA2ADYAAAAAAAAAAAAAAAAAAADYAAAAAAAAAEkJACQBRFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABJCSACQBRFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADsAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAFhFAAAAAAAAAAAAAAAAAABNhQBF2AAAAAAAQUBFAAAAAAAA2DYEUARQAAAAAJDYEU2NgAAAAAAAAQDYFNgAAAAAAABNgNhQEUAIAAAAABBdgAAAAAAAABFNgRTYAAAAAAABNgBQAAAAAAAAENl2AQUAAAAAAADYA2TZSAAAAAAAAAE2XYAAAAAABAkAAAVFAAAAAAAAAAAAAAANgA2AANgAAAAAAA2NgAAAAAAAAAABFAAAAAAAAAA2AA2AAAAAAAA2ADY2AAAAAAAAAA2AAAAAAAAAAADY2AAAAAAAA2AAAAAAAAAAAA2AAAAAAAAADZNlANgAAAAAAADYAAANgAAAAAAAAAAAAAAACRJACQA84AoigAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAkhIAACiKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGwAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABIAknaSAEnaAQqQoAAAAAAAGwGwAAAAAAAAAIbCgAAAAAAAABsbAdCbLsAAAAAAAAAmwoAAAAAAACALsmy7AAAAAAAAAIuybAKAAAAAAAAJsBsKAAAAAAAAAhsuwAAAAAAAAAi7AIoAnaoAAAAAIqbAbKmy7AAAAAAAEgCKmyggoAAAAAAAmy7JsALsAAAAAAAIoAbGwCKAAAAAJKKAHnCQFRQAAAAAAAAAAAAAAAAAANgAAAAAAANgANjYAAAAAAADYAAAAAAAAAAADYANgAAAAAAADYADoAAAAAAAAAA2AAAAAAAAAAADY2AAAAAAAAADY2AAAAAAAA7QA2NgA2AAAAAAAA2NgANgAAAAAAA2AA2AAAAAAAAAANgAAAAAAARQElFkAN/GAKIoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABIAiLKdoKAAsIAoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEgAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2AAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB2khIJKdqygKAAqKAAAAAAACbAoAAAAAAACKAgoAAB2gAAAAAIqbAbKAAAAAAAEpsqbAbLsAAAAAAAAAILsAmygAAAAAACC7GwJsoAAAAAAAGwbAi7AAAAAAAASABsGwBsAAAAAAACKmwCgAAAAAAABsCAoAAAAAAAEgIbKBsAAAAAAAAigCLsdgAAAAAAAABsGwAAAABIPBJRZHoAAKkKAAAAAAAAAAAAAAAEgGwAGwAAAAAAAGwAGxsAAAAAAAAABsAGwAAAAAAAGxsABsAAAAAAABsAGxsAAAAAAAAAGxsAAAAAAAAABsAGwAAAAAAABsAAAAAAAAAAAGxsAAAAAAAAAGxsAGwAAAAAAAAAHaAAAAAAAAAAbAAAAAAAASAJKLIAAB51IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQBJCQAIUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQRFQFUAAAAAAAAAAAAAAAAAAAAAAAAAAHgAPQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeAAAA9AAAAAAAAAAAAAAAAAB4AD0AHgAPQDtAAkeAA9AO0AAAAeAAAA9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB4AD0AAAHgAAISSAiyj0ckVAUE3BQQFRU6AVDoAVDoNwAAUQBUkNwAAVDoOgFJEBUVAUkToBUDoA7TrAFQOgFEAXtSQBRAFRUBe0AAEBQABAFDdAUQ3BRAFBAUE3gFTcAVABQToBQQFBNwUQBRCAUQBQ3TcFAABN4BRDcFRUBUAFENwXtBAUQ3ADoAUQ3gFJQ6AUAAQ3BQQBUAFQBRDoBRJAUQBRDcFEImAUEBQTcFJEBUABUOgFEAUEBQlOgFEOgFEAUQ3eCibm8PRUAACekEFTqB//9k=" alt="Team Adhoc Logo">
+            <div class="header-content">
+                <h1>Client Deal Tracker</h1>
+                <p>Projects & Retainer Management Dashboard</p>
+            </div>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'overview')">Overview</button>
+            <button class="tab-btn" onclick="switchTab(event, 'company-list')">Company List</button>
+            <button class="tab-btn" onclick="switchTab(event, 'projects')">Projects Pipeline</button>
+            <button class="tab-btn" onclick="switchTab(event, 'retainers')">Retainers Pipeline</button>
+            <button class="tab-btn" onclick="switchTab(event, 'analytics')">Analytics</button>
+        </div>
+
+        <div class="content">
+            <!-- OVERVIEW TAB -->
+            <div id="overview" class="tab-content active">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; color: #333;">Dashboard Overview</h2>
+                    <div class="btn-group">
+                        <button onclick="openAddDealModal('project')">+ New Project</button>
+                        <button class="secondary" onclick="downloadReport()">Export</button>
+                    </div>
+                </div>
+
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <h3>Active Deals</h3>
+                        <div class="value" id="metric-active">0</div>
+                        <div class="subtext">Across all pipelines</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Pipeline Value</h3>
+                        <div class="value" id="metric-pipeline">$0</div>
+                        <div class="subtext">Total project value</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Weighted Pipeline Value</h3>
+                        <div class="value" id="metric-weighted">$0</div>
+                        <div class="subtext">By probability</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Closing This Month</h3>
+                        <div class="value" id="metric-closing">$0</div>
+                        <div class="subtext">Expected closes</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Retainer Value</h3>
+                        <div class="value" id="metric-retainer">$0</div>
+                        <div class="subtext">Monthly recurring</div>
+                    </div>
+                    <div class="metric-card">
+                        <h3>Win Rate</h3>
+                        <div class="value" id="metric-winrate">0%</div>
+                        <div class="subtext">Discovery to closed</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Recent Activity</div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Project Pipeline Health</h3>
+                        <div class="summary-row">
+                            <span class="label">In Discovery</span>
+                            <span class="value" id="health-discovery">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Proposal Sent</span>
+                            <span class="value" id="health-proposal">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">In Negotiation</span>
+                            <span class="value" id="health-negotiation">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Conversion Metrics</h3>
+                        <div class="summary-row">
+                            <span class="label">Retainers Signed</span>
+                            <span class="value" id="conv-retainers">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Conversion Rate</span>
+                            <span class="value" id="conv-rate">0%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Projects Completed</span>
+                            <span class="value" id="conv-completed">0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Pipeline Weighted %</h3>
+                        <div class="summary-row">
+                            <span class="label">Weighted by Probability</span>
+                            <span class="value" id="weighted-percentage">0%</span>
+                        </div>
+                        <div class="summary-row" style="font-size: 12px; opacity: 0.8;">
+                            <span class="label">of Total Pipeline Value</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Deal Metrics</h3>
+                        <div class="summary-row">
+                            <span class="label">Avg Deal Size</span>
+                            <span class="value" id="avg-deal-size">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Total # Deals</span>
+                            <span class="value" id="total-deals">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Conversion Funnel</span>
+                            <span class="value" id="conversion-funnel">0%</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Forecast (30 Days)</h3>
+                        <div class="summary-row">
+                            <span class="label">Expected Revenue</span>
+                            <span class="value" id="forecast-30">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Best Case</span>
+                            <span class="value" id="forecast-best">$0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Worst Case</span>
+                            <span class="value" id="forecast-worst">$0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Retainer Health</h3>
+                        <div class="summary-row">
+                            <span class="label">Active Retainers</span>
+                            <span class="value" id="active-retainers">0</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Project-to-Retainer</span>
+                            <span class="value" id="attachment-rate">0%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Total MRR</span>
+                            <span class="value" id="total-mrr">$0</span>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Client Concentration</h3>
+                        <div class="summary-row">
+                            <span class="label">Top Client %</span>
+                            <span class="value" id="top-client-pct">0%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Top 3 Clients %</span>
+                            <span class="value" id="top3-client-pct">0%</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Unique Clients</span>
+                            <span class="value" id="unique-clients">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Analytics Charts</div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Sales Funnel</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="funnelChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Top Clients by Value</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="topClientsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPANY LIST TAB -->
+            <div id="company-list" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; color: #333;">Company List</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="secondary" onclick="resetData()">Reset Data</button>
+                        <button class="secondary" onclick="downloadReport()">Export</button>
+                    </div>
+                </div>
+
+                <table class="deals-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Source</th>
+                            <th>Value</th>
+                            <th>Probability</th>
+                            <th>Potential Retainer</th>
+                            <th>Expected Close</th>
+                            <th>Next Step</th>
+                            <th>Decision Maker</th>
+                        </tr>
+                    </thead>
+                    <tbody id="company-list-body">
+                        <tr>
+                            <td colspan="10" class="no-data">No companies yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- PROJECTS PIPELINE TAB -->
+            <div id="projects" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; color: #333;">Projects Pipeline</h2>
+                    <button onclick="openAddDealModal('project')">+ New Project Deal</button>
+                </div>
+
+                <div id="projects-pipeline"></div>
+            </div>
+
+            <!-- RETAINERS PIPELINE TAB -->
+            <div id="retainers" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="font-size: 20px; color: #333;">Retainers Pipeline</h2>
+                    <button onclick="openAddDealModal('retainer')">+ New Retainer Deal</button>
+                </div>
+
+                <div id="retainers-pipeline"></div>
+            </div>
+
+            <!-- ANALYTICS TAB -->
+            <div id="analytics" class="tab-content">
+                <h2 style="font-size: 20px; color: #333; margin-bottom: 30px;">Analytics & Insights</h2>
+                
+                <!-- Key Performance Indicators -->
+                <div class="section-title">Key Performance Indicators</div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Avg Sales Cycle</h3>
+                        <div class="value" id="avg-sales-cycle">0</div>
+                        <div class="subtext">days to close</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Deal Velocity</h3>
+                        <div class="value" id="deal-velocity">0</div>
+                        <div class="subtext">deals/month</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Avg Deal Age</h3>
+                        <div class="value" id="avg-deal-age">0</div>
+                        <div class="subtext">days in pipeline</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Time to Proposal</h3>
+                        <div class="value" id="time-to-proposal">0</div>
+                        <div class="subtext">days from lead</div>
+                    </div>
+                </div>
+
+                <!-- Stage Analysis -->
+                <div class="section-title">Pipeline Stage Analysis</div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Pipeline Distribution</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="pipelineDistributionChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Win Rate by Stage</h3>
+                        <div id="winRateByStage" style="padding: 10px;">
+                            <div class="summary-row" style="margin-bottom: 10px;">
+                                <span class="label">Lead → Closed</span>
+                                <span class="value" id="wr-lead">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 10px;">
+                                <span class="label">Discovery → Closed</span>
+                                <span class="value" id="wr-discovery">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 10px;">
+                                <span class="label">Proposal → Closed</span>
+                                <span class="value" id="wr-proposal">0%</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="label">Negotiation → Closed</span>
+                                <span class="value" id="wr-negotiation">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Deal Size Distribution</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="dealSizeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Source & Performance -->
+                <div class="section-title">Source Performance</div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Deals by Source</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="sourcePerformanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Source Win Rate</h3>
+                        <div id="sourceWinRate" style="padding: 10px;">
+                            <div class="summary-row" style="margin-bottom: 8px;">
+                                <span class="label">Inbound</span>
+                                <span class="value" id="src-inbound">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 8px;">
+                                <span class="label">Outbound</span>
+                                <span class="value" id="src-outbound">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 8px;">
+                                <span class="label">Referral</span>
+                                <span class="value" id="src-referral">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 8px;">
+                                <span class="label">Partner</span>
+                                <span class="value" id="src-partner">0%</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="label">Event</span>
+                                <span class="value" id="src-event">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecast & Trends -->
+                <div class="section-title">Forecast & Trends</div>
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <h3>Months to Close Forecast</h3>
+                        <div id="monthsToCloseForecast" style="padding: 10px;">
+                            <div class="summary-row" style="margin-bottom: 10px;">
+                                <span class="label">30-day close probability</span>
+                                <span class="value" id="prob-30day">0%</span>
+                            </div>
+                            <div class="summary-row" style="margin-bottom: 10px;">
+                                <span class="label">60-day close probability</span>
+                                <span class="value" id="prob-60day">0%</span>
+                            </div>
+                            <div class="summary-row">
+                                <span class="label">90-day close probability</span>
+                                <span class="value" id="prob-90day">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Stage Duration Trends</h3>
+                        <div style="height: 250px; position: relative;">
+                            <canvas id="stageDurationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD DEAL MODAL -->
+    <div id="addDealModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h2>Add New Deal</h2>
+            <form id="dealForm" onsubmit="saveDeal(event)">
+                <div class="form-group">
+                    <label>Company Name *</label>
+                    <input type="text" id="dealCompany" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Deal Type *</label>
+                    <select id="dealType" required onchange="updateDealForm()">
+                        <option value="">Select type...</option>
+                        <option value="project">Project</option>
+                        <option value="retainer">Retainer</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="projectTypeGroup" style="display: none;">
+                    <label>Project Type</label>
+                    <select id="projectType">
+                        <option value="">Select...</option>
+                        <option value="cleanup">Finance Cleanup</option>
+                        <option value="close">Close Redesign</option>
+                        <option value="kpi">KPI Setup</option>
+                        <option value="cash">Cash Model</option>
+                        <option value="reporting">Reporting Systems</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Source</label>
+                    <select id="dealSource">
+                        <option value="">Select...</option>
+                        <option value="inbound">Inbound</option>
+                        <option value="outbound">Outbound</option>
+                        <option value="referral">Referral</option>
+                        <option value="partner">Partner</option>
+                        <option value="event">Event</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select id="dealStatus" required>
+                        <option value="">Select...</option>
+                        <option value="lead">Lead</option>
+                        <option value="discovery">Discovery</option>
+                        <option value="proposal">Proposal</option>
+                        <option value="negotiation">Negotiation</option>
+                        <option value="closed-project">Closed Won</option>
+                        <option value="closed-loss">Closed Loss</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="projectValueGroup">
+                    <label id="projectValueLabel">Project Value ($)</label>
+                    <input type="number" id="dealValue" step="0.01">
+                </div>
+
+                <div class="form-group" id="retainerValueGroup" style="display: none;">
+                    <label>Monthly Value ($)</label>
+                    <input type="number" id="retainerValue" step="0.01">
+                </div>
+
+                <div class="form-group" id="potentialRetainerGroup" style="display: none;">
+                    <label>Potential Retainer (/mo)</label>
+                    <input type="number" id="potentialRetainer" step="0.01">
+                </div>
+
+                <div class="form-group" id="probabilityGroup">
+                    <label>Probability (%)</label>
+                    <input type="number" id="dealProbability" min="0" max="100">
+                </div>
+
+                <div class="form-group">
+                    <label>Next Step Date</label>
+                    <input type="date" id="dealNextStepDate">
+                </div>
+
+                <div class="form-group">
+                    <label id="dateLabel">Expected Close Date</label>
+                    <input type="date" id="dealDate">
+                </div>
+
+                <div class="form-group" id="startDateGroup" style="display: none;">
+                    <label>Start Date</label>
+                    <input type="date" id="dealStartDate">
+                </div>
+
+                <div class="form-group" id="endDateGroup" style="display: none;">
+                    <label>End Date</label>
+                    <input type="date" id="dealEndDate">
+                </div>
+
+                <div class="form-group">
+                    <label id="painLabel">Pain Point</label>
+                    <textarea id="dealPain" placeholder="e.g., No controller, messy close"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Next Step Notes</label>
+                    <textarea id="dealNextStepNotes" placeholder="What comes next"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Decision Maker & Role</label>
+                    <input type="text" id="dealDM" placeholder="Name & role">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit">Save Deal</button>
+                    <button type="button" class="secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Initialize Supabase after library loads
+        let supabaseClient = null;
+        
+        function initSupabase() {
+            if (supabaseClient) return; // Already initialized
+            const SUPABASE_URL = 'https://cchaqbugycigjbstrtqk.supabase.co';
+            const SUPABASE_ANON_KEY = 'sb_publishable_UUX-segf-KKYNWcqs_DwlA_iUKBT61Q';
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        }
+        let deals = [];
+        
+        // Load deals from Supabase on page load
+        async function loadDealsFromSupabase() {
+            initSupabase();
+            console.log('Loading deals from Supabase...');
+            try {
+                const { data, error } = await supabaseClient
+                    .from('deals')
+                    .select('*');
+                
+                console.log('Supabase response:', { data, error });
+                
+                if (error) throw error;
+                
+                if (data && data.length > 0) {
+                    console.log('Found', data.length, 'deals in Supabase');
+                    deals = data.map(d => ({
+                        id: d.id,
+                        company: d.company,
+                        type: d.type,
+                        status: d.status,
+                        value: d.value,
+                        probability: d.probability,
+                        potentialRetainer: d.potential_retainer,
+                        source: d.source,
+                        pain: d.pain_point,
+                        date: d.close_date,
+                        startDate: d.start_date,
+                        nextStepDate: d.next_step_date,
+                        nextStepNotes: d.next_step_notes,
+                        dm: d.decision_maker,
+                        projectType: d.project_type,
+                        created: d.created_at,
+                        endDate: d.end_date
+                    }));
+                } else {
+                    console.log('No deals found in Supabase, loading sample data...');
+                    loadSampleData();
+                }
+                
+                renderDashboard();
+            } catch (error) {
+                console.error('Error loading deals:', error);
+                loadSampleData();
+            }
+        }
+
+        
+        function loadSampleData() {
+            deals = [
+                {
+                    id: 1,
+                    company: 'Acme Corp',
+                    type: 'project',
+                    projectType: 'close',
+                    source: 'inbound',
+                    value: 16000,
+                    probability: 75,
+                    potentialRetainer: 3000,
+                    status: 'proposal',
+                    pain: 'Messy month-end close',
+                    startDate: '2025-03-01',
+                    date: '2026-02-28',
+                    nextStepDate: '2025-02-28',
+                    nextStepNotes: 'Follow up on proposal',
+                    dm: 'Sarah Johnson, CFO',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 2,
+                    company: 'TechStart Inc',
+                    type: 'project',
+                    projectType: 'kpi',
+                    source: 'referral',
+                    value: 25000,
+                    probability: 50,
+                    potentialRetainer: 2500,
+                    status: 'discovery',
+                    pain: 'No real-time KPIs',
+                    startDate: '2025-04-01',
+                    date: '2026-02-15',
+                    nextStepDate: '2025-03-01',
+                    nextStepNotes: 'Schedule discovery call',
+                    dm: 'Mark Chen, Controller',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 3,
+                    company: 'Finance Solutions LLC',
+                    type: 'project',
+                    projectType: 'reporting',
+                    source: 'partner',
+                    value: 4000,
+                    probability: 100,
+                    potentialRetainer: 1500,
+                    status: 'closed-project',
+                    pain: 'Outdated reporting',
+                    startDate: '2025-01-15',
+                    date: '2025-02-15',
+                    nextStepDate: '2025-02-20',
+                    nextStepNotes: 'Project complete',
+                    dm: 'Lisa Wang, VP Finance',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 4,
+                    company: 'Growth Ventures',
+                    type: 'project',
+                    projectType: 'cleanup',
+                    source: 'outbound',
+                    value: 7000,
+                    probability: 60,
+                    potentialRetainer: 1200,
+                    status: 'negotiation',
+                    pain: 'Accounting cleanup needed',
+                    startDate: '2025-03-10',
+                    date: '2026-02-20',
+                    nextStepDate: '2025-02-27',
+                    nextStepNotes: 'Waiting on contract signature',
+                    dm: 'John Davis, CFO',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 5,
+                    company: 'Enterprise Systems Co',
+                    type: 'project',
+                    projectType: 'cleanup',
+                    source: 'outbound',
+                    value: 22000,
+                    probability: 40,
+                    potentialRetainer: 3500,
+                    status: 'lead',
+                    pain: 'Complete accounting overhaul needed',
+                    startDate: '2025-05-01',
+                    date: '2026-02-28',
+                    nextStepDate: '2026-02-28',
+                    nextStepNotes: 'Initial discovery meeting scheduled',
+                    dm: 'Patricia Moore, VP Operations',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 6,
+                    company: 'MidMarket Retail Inc',
+                    type: 'project',
+                    projectType: 'reporting',
+                    source: 'event',
+                    value: 18000,
+                    probability: 85,
+                    potentialRetainer: 2800,
+                    status: 'proposal',
+                    pain: 'Real-time reporting gaps',
+                    startDate: '2025-04-15',
+                    date: '2026-02-28',
+                    nextStepDate: '2026-02-27',
+                    nextStepNotes: 'Waiting for budget approval',
+                    dm: 'Robert Chen, CFO',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 7,
+                    company: 'Startup Capital Partners',
+                    type: 'project',
+                    projectType: 'cash',
+                    source: 'referral',
+                    value: 12000,
+                    probability: 70,
+                    potentialRetainer: 2000,
+                    status: 'discovery',
+                    pain: 'Cash flow visibility',
+                    startDate: '2025-03-20',
+                    date: '2026-02-28',
+                    nextStepDate: '2026-03-10',
+                    nextStepNotes: 'Deep dive meeting next week',
+                    dm: 'Jennifer Wells, Controller',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 8,
+                    company: 'Manufacturing Solutions Ltd',
+                    type: 'project',
+                    projectType: 'close',
+                    source: 'inbound',
+                    value: 20000,
+                    probability: 30,
+                    potentialRetainer: 3200,
+                    status: 'lead',
+                    pain: 'Monthly close takes 2 weeks',
+                    startDate: '2025-05-01',
+                    date: '2026-02-28',
+                    nextStepDate: '2026-03-15',
+                    nextStepNotes: 'Follow up call scheduled',
+                    dm: 'Michael Torres, Director of Finance',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 9,
+                    company: 'Digital Agency Pro',
+                    type: 'project',
+                    projectType: 'kpi',
+                    source: 'partner',
+                    value: 15000,
+                    probability: 65,
+                    potentialRetainer: 2200,
+                    status: 'negotiation',
+                    pain: 'KPI tracking across departments',
+                    startDate: '2025-04-01',
+                    date: '2026-02-28',
+                    nextStepDate: '2026-02-26',
+                    nextStepNotes: 'Contract negotiation in progress',
+                    dm: 'Angela Davis, VP Finance',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 10,
+                    company: 'Global Tech Services',
+                    type: 'project',
+                    projectType: 'reporting',
+                    source: 'inbound',
+                    value: 30000,
+                    probability: 55,
+                    potentialRetainer: 4000,
+                    status: 'proposal',
+                    pain: 'Quarterly reporting complexity',
+                    startDate: '2025-05-15',
+                    date: '2026-03-20',
+                    nextStepDate: '2026-03-01',
+                    nextStepNotes: 'Proposal under review',
+                    dm: 'David Harrison, CFO',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 11,
+                    company: 'Acme Corp',
+                    type: 'retainer',
+                    source: 'inbound',
+                    value: 3500,
+                    status: 'closed-retainer',
+                    pain: 'Monthly cash reconciliation',
+                    date: '2025-03-01',
+                    endDate: '',
+                    nextStepDate: '2026-03-01',
+                    nextStepNotes: 'Quarterly check-in scheduled',
+                    dm: 'Sarah Johnson, CFO',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 12,
+                    company: 'Finance Solutions LLC',
+                    type: 'retainer',
+                    source: 'partner',
+                    value: 2500,
+                    status: 'closed-retainer',
+                    pain: 'Ongoing reporting support',
+                    date: '2025-03-15',
+                    endDate: '',
+                    nextStepDate: '2026-02-28',
+                    nextStepNotes: 'Monthly touchpoint',
+                    dm: 'Lisa Wang, VP Finance',
+                    created: new Date().toISOString()
+                },
+                {
+                    id: 13,
+                    company: 'MidMarket Retail Inc',
+                    type: 'retainer',
+                    source: 'referral',
+                    value: 2000,
+                    status: 'closed-retainer',
+                    pain: 'Weekly cash forecasting',
+                    date: '2025-04-01',
+                    endDate: '',
+                    nextStepDate: '2026-02-15',
+                    nextStepNotes: 'Standing call every Monday',
+                    dm: 'Robert Chen, CFO',
+                    created: new Date().toISOString()
+                }
+            ];
+            // Don't save sample data to Supabase - just load locally
+            // saveDealToSupabase();
+        }
+
+        async function saveDealToSupabase(deal = null) {
+            try {
+                if (deal) {
+                    // Update or insert single deal
+                    const dealData = {
+                        company: deal.company,
+                        type: deal.type,
+                        status: deal.status,
+                        value: deal.value,
+                        probability: deal.probability,
+                        potential_retainer: deal.potentialRetainer,
+                        source: deal.source,
+                        pain_point: deal.pain,
+                        close_date: deal.date,
+                        start_date: deal.startDate,
+                        next_step_date: deal.nextStepDate,
+                        next_step_notes: deal.nextStepNotes,
+                        decision_maker: deal.dm,
+                        project_type: deal.projectType,
+                        end_date: deal.endDate
+                    };
+                    
+                    if (deal.id && typeof deal.id === 'number') {
+                        // Update existing
+                        const { error } = await supabaseClient
+                            .from('deals')
+                            .update(dealData)
+                            .eq('id', deal.id);
+                        if (error) throw error;
+                    } else {
+                        // Insert new
+                        const { data, error } = await supabaseClient
+                            .from('deals')
+                            .insert([dealData])
+                            .select();
+                        if (error) throw error;
+                        if (data && data[0]) {
+                            deal.id = data[0].id;
+                        }
+                    }
+                } else {
+                    // Save all deals (for bulk operations)
+                    for (let deal of deals) {
+                        await saveDealToSupabase(deal);
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving deal:', error);
+                alert('Error saving deal. Please try again.');
+            }
+        }
+        
+        function saveDealStorage() {
+            // Legacy function - now uses Supabase
+            saveDealToSupabase();
+        }
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Load analytics when switching to analytics tab
+            if (tabName === 'analytics') {
+                setTimeout(() => {
+                    updateAnalyticsTab();
+                }, 100);
+            }
+        }
+
+        function formatDateForInput(dateStr) {
+            if (!dateStr) return '';
+            // If already in YYYY-MM-DD format, return as is
+            if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) return dateStr;
+            // Try to parse and reformat
+            const date = new Date(dateStr);
+            if (isNaN(date.getTime())) return '';
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        function updateDeal(id, field, value) {
+            const deal = deals.find(d => d.id === id);
+            if (deal) {
+                // Numeric fields that need integer parsing
+                const numericFields = ['value', 'probability', 'potentialRetainer'];
+                
+                if (numericFields.includes(field)) {
+                    deal[field] = value === '' ? 0 : parseInt(value) || 0;
+                } else {
+                    // Keep everything else as string (including dates)
+                    deal[field] = value;
+                }
+                
+                // Save to Supabase
+                saveDealToSupabase(deal);
+                
+                // Refresh all dashboard elements
+                updateMetrics();
+                renderCompanyList();
+                renderProjects();
+                renderRetainers();
+            }
+        }
+
+        async function deleteDeal(id) {
+            if (confirm('Delete this deal?')) {
+                try {
+                    const { error } = await supabaseClient
+                        .from('deals')
+                        .delete()
+                        .eq('id', id);
+                    
+                    if (error) throw error;
+                    
+                    deals = deals.filter(d => d.id !== id);
+                    renderDashboard();
+                } catch (error) {
+                    console.error('Error deleting deal:', error);
+                    alert('Error deleting deal. Please try again.');
+                }
+            }
+        }
+
+        function openAddDealModal(type) {
+            document.getElementById('dealForm').reset();
+            document.getElementById('dealType').value = type;
+            updateDealForm();
+            document.getElementById('addDealModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('addDealModal').classList.remove('active');
+        }
+
+        function updateDealForm() {
+            const type = document.getElementById('dealType').value;
+            
+            // Project-specific fields
+            document.getElementById('projectTypeGroup').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('potentialRetainerGroup').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('probabilityGroup').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('projectValueGroup').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('startDateGroup').style.display = type === 'project' ? 'block' : 'none';
+            document.getElementById('endDateGroup').style.display = type === 'project' ? 'block' : 'none';
+            
+            // Retainer-specific fields
+            document.getElementById('retainerValueGroup').style.display = type === 'retainer' ? 'block' : 'none';
+            
+            // Update labels
+            if (type === 'project') {
+                document.getElementById('projectValueLabel').textContent = 'Project Value ($)';
+                document.getElementById('dateLabel').textContent = 'Expected Close Date';
+                document.getElementById('painLabel').textContent = 'Pain Point';
+            } else if (type === 'retainer') {
+                document.getElementById('dateLabel').textContent = 'Start Date';
+                document.getElementById('painLabel').textContent = 'Service Scope';
+            }
+        }
+
+        function saveDeal(e) {
+            e.preventDefault();
+            
+            const type = document.getElementById('dealType').value;
+            const deal = {
+                id: Math.max(...deals.map(d => d.id), 0) + 1,
+                company: document.getElementById('dealCompany').value,
+                type: type,
+                projectType: document.getElementById('projectType').value || null,
+                source: document.getElementById('dealSource').value || null,
+                value: parseInt(document.getElementById('dealValue').value) || 0,
+                probability: parseInt(document.getElementById('dealProbability').value) || 0,
+                potentialRetainer: parseInt(document.getElementById('potentialRetainer').value) || 0,
+                status: document.getElementById('dealStatus').value,
+                pain: document.getElementById('dealPain').value,
+                nextStepNotes: document.getElementById('dealNextStepNotes').value,
+                date: document.getElementById('dealDate').value,
+                nextStepDate: document.getElementById('dealNextStepDate').value,
+                startDate: document.getElementById('dealStartDate').value,
+                endDate: document.getElementById('dealEndDate').value,
+                dm: document.getElementById('dealDM').value,
+                created: new Date().toISOString()
+            };
+
+            deals.push(deal);
+            saveDealToSupabase(deal);
+            closeModal();
+            renderDashboard();
+        }
+
+        function resetData() {
+            if (confirm('Reset all data to sample deals? This cannot be undone.')) {
+                localStorage.removeItem('deals');
+                location.reload();
+            }
+        }
+
+        function downloadReport() {
+            let csv = 'Company,Type,Status,Value,Date,Decision Maker\n';
+            deals.forEach(d => {
+                csv += `"${d.company}","${d.type}","${d.status}","${d.value}","${d.date}","${d.dm}"\n`;
+            });
+            
+            const element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv));
+            element.setAttribute('download', 'deal_tracker_' + new Date().toISOString().split('T')[0] + '.csv');
+            element.style.display = 'none';
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function renderDashboard() {
+            updateMetrics();
+            renderCompanyList();
+            renderProjects();
+            renderRetainers();
+            
+            // Initialize charts after DOM is updated
+            setTimeout(() => {
+                updateFunnelChart();
+                updateTopClientsChart();
+            }, 100);
+        }
+
+        function renderCompanyList() {
+            let html = '';
+            deals.forEach(deal => {
+                const type = deal.type === 'project' ? 'Project' : 'Retainer';
+                
+                html += '<tr>';
+                html += '<td><input type="text" value="' + deal.company + '" onchange="updateDeal(' + deal.id + ', \'company\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px;"></td>';
+                html += '<td><select onchange="updateDeal(' + deal.id + ', \'type\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"><option value="project" ' + (deal.type === 'project' ? 'selected' : '') + '>Project</option><option value="retainer" ' + (deal.type === 'retainer' ? 'selected' : '') + '>Retainer</option></select></td>';
+                html += '<td><select onchange="updateDeal(' + deal.id + ', \'status\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"><option value="lead" ' + (deal.status === 'lead' ? 'selected' : '') + '>Lead</option><option value="discovery" ' + (deal.status === 'discovery' ? 'selected' : '') + '>Discovery</option><option value="proposal" ' + (deal.status === 'proposal' ? 'selected' : '') + '>Proposal</option><option value="negotiation" ' + (deal.status === 'negotiation' ? 'selected' : '') + '>Negotiation</option><option value="closed-project" ' + (deal.status === 'closed-project' ? 'selected' : '') + '>Closed Won</option><option value="closed-loss" ' + (deal.status === 'closed-loss' ? 'selected' : '') + '>Closed Loss</option><option value="closed-retainer" ' + (deal.status === 'closed-retainer' ? 'selected' : '') + '>Active</option><option value="inactive" ' + (deal.status === 'inactive' ? 'selected' : '') + '>Inactive</option></select></td>';
+                html += '<td><select onchange="updateDeal(' + deal.id + ', \'source\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"><option value="">-</option><option value="inbound" ' + (deal.source === 'inbound' ? 'selected' : '') + '>Inbound</option><option value="outbound" ' + (deal.source === 'outbound' ? 'selected' : '') + '>Outbound</option><option value="referral" ' + (deal.source === 'referral' ? 'selected' : '') + '>Referral</option><option value="partner" ' + (deal.source === 'partner' ? 'selected' : '') + '>Partner</option><option value="event" ' + (deal.source === 'event' ? 'selected' : '') + '>Event</option></select></td>';
+                html += '<td><input type="number" value="' + (deal.value || 0) + '" onchange="updateDeal(' + deal.id + ', \'value\', this.value)" step="0.01" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"></td>';
+                html += '<td><input type="number" value="' + (deal.probability || '') + '" onchange="updateDeal(' + deal.id + ', \'probability\', this.value)" min="0" max="100" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;" placeholder="%"></td>';
+                html += '<td><input type="number" value="' + (deal.potentialRetainer || '') + '" onchange="updateDeal(' + deal.id + ', \'potentialRetainer\', this.value)" step="0.01" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;" placeholder="/mo"></td>';
+                html += '<td><input type="date" value="' + (deal.date && deal.date.length === 10 ? deal.date : (deal.date || '')) + '" onchange="updateDeal(' + deal.id + ', \'date\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;"></td>';
+                html += '<td><input type="text" value="' + (deal.nextStepNotes || deal.pain || '') + '" onchange="updateDeal(' + deal.id + ', \'nextStepNotes\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;" placeholder="Next step"></td>';
+                html += '<td><input type="text" value="' + (deal.dm || '') + '" onchange="updateDeal(' + deal.id + ', \'dm\', this.value)" style="width: 100%; padding: 4px; border: 1px solid #ddd; border-radius: 3px; font-size: 12px;" placeholder="Name & role"></td>';
+                html += '</tr>';
+            });
+            
+            document.getElementById('company-list-body').innerHTML = html || '<tr><td colspan="10" class="no-data">No companies yet</td></tr>';
+        }
+
+        function updateMetrics() {
+            const projects = deals.filter(d => d.type === 'project');
+            const retainers = deals.filter(d => d.type === 'retainer');
+            
+            // Active deals (not closed)
+            const activeDealCount = deals.filter(d => !d.status.includes('closed') && d.status !== 'inactive').length;
+            const activeEl = document.getElementById('metric-active');
+            if (activeEl) activeEl.textContent = activeDealCount;
+            
+            // Pipeline value (OPEN projects only - exclude all closed deals)
+            const pipelineValue = projects.filter(d => !d.status.includes('closed') && d.status !== 'inactive').reduce((sum, d) => sum + (parseInt(d.value) || 0), 0);
+            const pipelineEl = document.getElementById('metric-pipeline');
+            if (pipelineEl) pipelineEl.textContent = '$' + pipelineValue.toLocaleString();
+            
+            // Weighted pipeline value (value * probability) - open deals only
+            const weightedValue = projects.filter(d => !d.status.includes('closed') && d.status !== 'inactive').reduce((sum, d) => {
+                const prob = (parseInt(d.probability) || 0) / 100;
+                return sum + ((parseInt(d.value) || 0) * prob);
+            }, 0);
+            const weightedEl = document.getElementById('metric-weighted');
+            if (weightedEl) weightedEl.textContent = '$' + Math.round(weightedValue).toLocaleString();
+            
+            // Closing this month
+            const currentDate = new Date();
+            const currentMonth = currentDate.getMonth();
+            const currentYear = currentDate.getFullYear();
+            const closingThisMonth = projects.filter(d => {
+                if (!d.date || d.status === 'closed-loss' || d.status === 'inactive') return false;
+                const closeDate = new Date(d.date);
+                return closeDate.getMonth() === currentMonth && closeDate.getFullYear() === currentYear;
+            }).reduce((sum, d) => sum + (parseInt(d.value) || 0), 0);
+            const closingEl = document.getElementById('metric-closing');
+            if (closingEl) closingEl.textContent = '$' + closingThisMonth.toLocaleString();
+            
+            // Retainer monthly value (active retainers only)
+            const retainerValue = retainers.filter(d => d.status === 'closed-retainer').reduce((sum, d) => sum + (parseInt(d.value) || 0), 0);
+            const retainerEl = document.getElementById('metric-retainer');
+            if (retainerEl) retainerEl.textContent = '$' + retainerValue.toLocaleString() + '/mo';
+            
+            // Win rate: Projects completed to retainers signed conversion
+            const completedProjects = projects.filter(d => d.status === 'closed-project').length;
+            const signedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
+            const winRate = completedProjects > 0 ? Math.round(signedRetainers / completedProjects * 100) : 0;
+            const winRateEl = document.getElementById('metric-winrate');
+            if (winRateEl) winRateEl.textContent = winRate + '%';
+
+            // Health metrics
+            const healthDiscoveryEl = document.getElementById('health-discovery');
+            if (healthDiscoveryEl) healthDiscoveryEl.textContent = projects.filter(d => d.status === 'discovery').length;
+            
+            const healthProposalEl = document.getElementById('health-proposal');
+            if (healthProposalEl) healthProposalEl.textContent = projects.filter(d => d.status === 'proposal').length;
+            
+            const healthNegotiationEl = document.getElementById('health-negotiation');
+            if (healthNegotiationEl) healthNegotiationEl.textContent = projects.filter(d => d.status === 'negotiation').length;
+
+            // Conversion metrics
+            const completedEl = document.getElementById('conv-completed');
+            if (completedEl) completedEl.textContent = completedProjects;
+            
+            const signedEl = document.getElementById('conv-retainers');
+            if (signedEl) signedEl.textContent = retainers.filter(d => d.status === 'closed-retainer').length;
+            
+            const convRate = completedProjects > 0 ? Math.min(100, Math.round(retainers.filter(d => d.status === 'closed-retainer').length / completedProjects * 100)) : 0;
+            const convRateEl = document.getElementById('conv-rate');
+            if (convRateEl) convRateEl.textContent = convRate + '%';
+            
+            // Weighted Pipeline % by Probability
+            const weightedPercentage = pipelineValue > 0 ? Math.round(weightedValue / pipelineValue * 100) : 0;
+            const weightedPercentageEl = document.getElementById('weighted-percentage');
+            if (weightedPercentageEl) weightedPercentageEl.textContent = weightedPercentage + '%';
+            
+            // NEW ANALYTICS
+            
+            // Average Deal Size
+            const openProjects = projects.filter(d => !d.status.includes('closed') && d.status !== 'inactive');
+            const avgDealSize = openProjects.length > 0 ? Math.round(pipelineValue / openProjects.length) : 0;
+            const avgEl = document.getElementById('avg-deal-size');
+            if (avgEl) avgEl.textContent = '$' + avgDealSize.toLocaleString();
+            
+            // Total Deals
+            const totalDealsEl = document.getElementById('total-deals');
+            if (totalDealsEl) totalDealsEl.textContent = deals.length;
+            
+            // Conversion Funnel (% making it to proposal stage or beyond)
+            const proposalBeyond = projects.filter(d => ['proposal', 'negotiation', 'closed-project'].includes(d.status)).length;
+            const totalProjects = projects.length;
+            const conversionFunnel = totalProjects > 0 ? Math.round(proposalBeyond / totalProjects * 100) : 0;
+            const funnelEl = document.getElementById('conversion-funnel');
+            if (funnelEl) funnelEl.textContent = conversionFunnel + '%';
+            
+            // 30-Day Forecast
+            const thirtyDaysAhead = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
+            const closingIn30 = projects.filter(d => {
+                if (!d.date || d.status.includes('closed') || d.status === 'inactive') return false;
+                const closeDate = new Date(d.date);
+                return closeDate >= currentDate && closeDate <= thirtyDaysAhead;
+            });
+            const forecast30 = closingIn30.reduce((sum, d) => sum + ((parseInt(d.value) || 0) * ((parseInt(d.probability) || 0) / 100)), 0);
+            const forecast30El = document.getElementById('forecast-30');
+            if (forecast30El) forecast30El.textContent = '$' + Math.round(forecast30).toLocaleString();
+            
+            // Best/Worst Case Scenarios (all 100% vs all actual probability)
+            const forecastBest = closingIn30.reduce((sum, d) => sum + (parseInt(d.value) || 0), 0);
+            const forecastWorst = Math.round(forecast30 * 0.5); // 50% of expected
+            const bestEl = document.getElementById('forecast-best');
+            const worstEl = document.getElementById('forecast-worst');
+            if (bestEl) bestEl.textContent = '$' + Math.round(forecastBest).toLocaleString();
+            if (worstEl) worstEl.textContent = '$' + forecastWorst.toLocaleString();
+            
+            // Retainer Attachment Rate
+            const closedProjectCount = projects.filter(d => d.status === 'closed-project').length;
+            const attachedRetainers = retainers.filter(d => d.status === 'closed-retainer').length;
+            const attachmentRate = closedProjectCount > 0 ? Math.round(attachedRetainers / closedProjectCount * 100) : 0;
+            const attachmentEl = document.getElementById('attachment-rate');
+            if (attachmentEl) attachmentEl.textContent = attachmentRate + '%';
+            
+            // Active Retainers Count
+            const activeRetainerCount = retainers.filter(d => d.status === 'closed-retainer').length;
+            const activeRetainersEl = document.getElementById('active-retainers');
+            if (activeRetainersEl) activeRetainersEl.textContent = activeRetainerCount;
+            
+            // Total MRR
+            const totalMRR = retainers.filter(d => d.status === 'closed-retainer').reduce((sum, d) => sum + (parseInt(d.value) || 0), 0);
+            const mrrEl = document.getElementById('total-mrr');
+            if (mrrEl) mrrEl.textContent = '$' + totalMRR.toLocaleString() + '/mo';
+            
+            // Client Concentration Risk
+            const allDealsByCompany = {};
+            deals.forEach(d => {
+                allDealsByCompany[d.company] = (allDealsByCompany[d.company] || 0) + (parseInt(d.value) || 0);
+            });
+            const sortedCompanies = Object.entries(allDealsByCompany).sort((a, b) => b[1] - a[1]);
+            const totalPipelineWithRetainers = pipelineValue + totalMRR * 12; // Annualize MRR
+            const topClientPct = sortedCompanies.length > 0 ? Math.round(sortedCompanies[0][1] / totalPipelineWithRetainers * 100) : 0;
+            const top3ClientPct = sortedCompanies.length > 0 ? Math.round(sortedCompanies.slice(0, 3).reduce((sum, c) => sum + c[1], 0) / totalPipelineWithRetainers * 100) : 0;
+            const uniqueClients = Object.keys(allDealsByCompany).length;
+            
+            const topClientEl = document.getElementById('top-client-pct');
+            const top3ClientEl = document.getElementById('top3-client-pct');
+            const uniqueClientsEl = document.getElementById('unique-clients');
+            if (topClientEl) topClientEl.textContent = topClientPct + '%';
+            if (top3ClientEl) top3ClientEl.textContent = top3ClientPct + '%';
+            if (uniqueClientsEl) uniqueClientsEl.textContent = uniqueClients;
+            
+            // Update Charts
+            updateFunnelChart();
+            updateTopClientsChart();
+        }
+        
+        function updateFunnelChart() {
+            const projects = deals.filter(d => d.type === 'project');
+            const ctx = document.getElementById('funnelChart');
+            if (!ctx) return;
+            
+            const stages = {
+                'lead': projects.filter(d => d.status === 'lead').length,
+                'discovery': projects.filter(d => d.status === 'discovery').length,
+                'proposal': projects.filter(d => d.status === 'proposal').length,
+                'negotiation': projects.filter(d => d.status === 'negotiation').length,
+                'closed': projects.filter(d => d.status === 'closed-project').length
+            };
+            
+            if (window.funnelChartInstance) window.funnelChartInstance.destroy();
+            
+            window.funnelChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Lead', 'Discovery', 'Proposal', 'Negotiation', 'Closed Won'],
+                    datasets: [{
+                        label: 'Deals',
+                        data: [stages.lead, stages.discovery, stages.proposal, stages.negotiation, stages.closed],
+                        backgroundColor: '#003366',
+                        borderColor: '#D4AF37',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true } }
+                }
+            });
+        }
+        
+        function updateTopClientsChart() {
+            const ctx = document.getElementById('topClientsChart');
+            if (!ctx) return;
+            
+            const clientValues = {};
+            deals.forEach(d => {
+                clientValues[d.company] = (clientValues[d.company] || 0) + (parseInt(d.value) || 0);
+            });
+            
+            const sorted = Object.entries(clientValues).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            
+            if (window.topClientsChartInstance) window.topClientsChartInstance.destroy();
+            
+            window.topClientsChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: sorted.map(c => c[0]),
+                    datasets: [{
+                        data: sorted.map(c => c[1]),
+                        backgroundColor: ['#003366', '#1a5fa0', '#D4AF37', '#88c9e0', '#e8d5b7'],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+        
+        function updateAnalyticsTab() {
+            const projects = deals.filter(d => d.type === 'project');
+            const closedProjects = projects.filter(d => d.status === 'closed-project');
+            
+            // Average Sales Cycle (days from first entry to close)
+            let totalDays = 0;
+            let closedCount = 0;
+            closedProjects.forEach(p => {
+                const created = new Date(p.created || new Date());
+                const closed = new Date(p.date || new Date());
+                const days = Math.ceil((closed - created) / (1000 * 60 * 60 * 24));
+                if (days > 0) {
+                    totalDays += days;
+                    closedCount++;
+                }
+            });
+            const avgSalesCycle = closedCount > 0 ? Math.round(totalDays / closedCount) : 0;
+            const avgSalesCycleEl = document.getElementById('avg-sales-cycle');
+            if (avgSalesCycleEl) avgSalesCycleEl.textContent = avgSalesCycle;
+            
+            // Deal Velocity (deals closed per month)
+            const lastMonth = new Date(new Date().setMonth(new Date().getMonth() - 1));
+            const dealsLastMonth = closedProjects.filter(p => new Date(p.date) > lastMonth).length;
+            const dealVelocityEl = document.getElementById('deal-velocity');
+            if (dealVelocityEl) dealVelocityEl.textContent = dealsLastMonth;
+            
+            // Average Deal Age (days in current pipeline)
+            let totalAge = 0;
+            const openProjects = projects.filter(d => !d.status.includes('closed') && d.status !== 'inactive');
+            openProjects.forEach(p => {
+                const created = new Date(p.created || new Date());
+                const age = Math.ceil((new Date() - created) / (1000 * 60 * 60 * 24));
+                totalAge += age > 0 ? age : 0;
+            });
+            const avgDealAge = openProjects.length > 0 ? Math.round(totalAge / openProjects.length) : 0;
+            const avgDealAgeEl = document.getElementById('avg-deal-age');
+            if (avgDealAgeEl) avgDealAgeEl.textContent = avgDealAge;
+            
+            // Time to Proposal (avg days from lead to proposal)
+            let proposalDays = 0;
+            let proposalCount = 0;
+            projects.filter(p => ['proposal', 'negotiation', 'closed-project'].includes(p.status)).forEach(p => {
+                const created = new Date(p.created || new Date());
+                const days = Math.ceil((new Date() - created) / (1000 * 60 * 60 * 24));
+                proposalDays += days > 0 ? days : 0;
+                proposalCount++;
+            });
+            const timeToProposal = proposalCount > 0 ? Math.round(proposalDays / proposalCount) : 0;
+            const timeToProposalEl = document.getElementById('time-to-proposal');
+            if (timeToProposalEl) timeToProposalEl.textContent = timeToProposal;
+            
+            // Win Rate by Stage
+            const leadCount = projects.filter(p => p.status === 'lead').length;
+            const discoveryCount = projects.filter(p => ['discovery', 'proposal', 'negotiation', 'closed-project'].includes(p.status)).length;
+            const proposalCount2 = projects.filter(p => ['proposal', 'negotiation', 'closed-project'].includes(p.status)).length;
+            const negotiationCount = projects.filter(p => ['negotiation', 'closed-project'].includes(p.status)).length;
+            
+            const wrLead = projects.length > 0 ? Math.round(closedProjects.length / projects.length * 100) : 0;
+            const wrDiscovery = discoveryCount > 0 ? Math.round(closedProjects.length / discoveryCount * 100) : 0;
+            const wrProposal = proposalCount2 > 0 ? Math.round(closedProjects.length / proposalCount2 * 100) : 0;
+            const wrNegotiation = negotiationCount > 0 ? Math.round(closedProjects.length / negotiationCount * 100) : 0;
+            
+            document.getElementById('wr-lead').textContent = wrLead + '%';
+            document.getElementById('wr-discovery').textContent = wrDiscovery + '%';
+            document.getElementById('wr-proposal').textContent = wrProposal + '%';
+            document.getElementById('wr-negotiation').textContent = wrNegotiation + '%';
+            
+            // Source Win Rate
+            const sources = ['inbound', 'outbound', 'referral', 'partner', 'event'];
+            sources.forEach(src => {
+                const srcProjects = projects.filter(p => p.source === src);
+                const srcClosed = srcProjects.filter(p => p.status === 'closed-project');
+                const winRate = srcProjects.length > 0 ? Math.round(srcClosed.length / srcProjects.length * 100) : 0;
+                const el = document.getElementById(`src-${src}`);
+                if (el) el.textContent = winRate + '%';
+            });
+            
+            // Close Probability by Days
+            const now = new Date();
+            const closingIn30 = openProjects.filter(p => {
+                const closeDate = new Date(p.date);
+                return closeDate <= new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000) && closeDate >= now;
+            }).length;
+            const closingIn60 = openProjects.filter(p => {
+                const closeDate = new Date(p.date);
+                return closeDate <= new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000) && closeDate >= now;
+            }).length;
+            const closingIn90 = openProjects.filter(p => {
+                const closeDate = new Date(p.date);
+                return closeDate <= new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000) && closeDate >= now;
+            }).length;
+            
+            const prob30 = openProjects.length > 0 ? Math.round(closingIn30 / openProjects.length * 100) : 0;
+            const prob60 = openProjects.length > 0 ? Math.round(closingIn60 / openProjects.length * 100) : 0;
+            const prob90 = openProjects.length > 0 ? Math.round(closingIn90 / openProjects.length * 100) : 0;
+            
+            document.getElementById('prob-30day').textContent = prob30 + '%';
+            document.getElementById('prob-60day').textContent = prob60 + '%';
+            document.getElementById('prob-90day').textContent = prob90 + '%';
+            
+            // Update Charts
+            updatePipelineDistributionChart();
+            updateDealSizeChart();
+            updateSourcePerformanceChart();
+            updateStageDurationChart();
+        }
+        
+        function updatePipelineDistributionChart() {
+            const ctx = document.getElementById('pipelineDistributionChart');
+            if (!ctx) return;
+            
+            const projects = deals.filter(d => d.type === 'project');
+            const stages = {
+                'Lead': projects.filter(d => d.status === 'lead').length,
+                'Discovery': projects.filter(d => d.status === 'discovery').length,
+                'Proposal': projects.filter(d => d.status === 'proposal').length,
+                'Negotiation': projects.filter(d => d.status === 'negotiation').length,
+                'Closed Won': projects.filter(d => d.status === 'closed-project').length
+            };
+            
+            if (window.pipelineDistChartInstance) window.pipelineDistChartInstance.destroy();
+            
+            window.pipelineDistChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(stages),
+                    datasets: [{
+                        data: Object.values(stages),
+                        backgroundColor: ['#88c9e0', '#1a5fa0', '#003366', '#D4AF37', '#e8d5b7'],
+                        borderColor: 'white',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+        
+        function updateDealSizeChart() {
+            const ctx = document.getElementById('dealSizeChart');
+            if (!ctx) return;
+            
+            const projects = deals.filter(d => d.type === 'project');
+            const sizes = {
+                '<$10K': projects.filter(p => (parseInt(p.value) || 0) < 10000).length,
+                '$10-20K': projects.filter(p => (parseInt(p.value) || 0) >= 10000 && (parseInt(p.value) || 0) < 20000).length,
+                '$20-30K': projects.filter(p => (parseInt(p.value) || 0) >= 20000 && (parseInt(p.value) || 0) < 30000).length,
+                '>$30K': projects.filter(p => (parseInt(p.value) || 0) >= 30000).length
+            };
+            
+            if (window.dealSizeChartInstance) window.dealSizeChartInstance.destroy();
+            
+            window.dealSizeChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sizes),
+                    datasets: [{
+                        label: 'Deals',
+                        data: Object.values(sizes),
+                        backgroundColor: '#003366',
+                        borderColor: '#D4AF37',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+        
+        function updateSourcePerformanceChart() {
+            const ctx = document.getElementById('sourcePerformanceChart');
+            if (!ctx) return;
+            
+            const projects = deals.filter(d => d.type === 'project');
+            const sources = {
+                'Inbound': projects.filter(p => p.source === 'inbound').length,
+                'Outbound': projects.filter(p => p.source === 'outbound').length,
+                'Referral': projects.filter(p => p.source === 'referral').length,
+                'Partner': projects.filter(p => p.source === 'partner').length,
+                'Event': projects.filter(p => p.source === 'event').length
+            };
+            
+            if (window.sourceChartInstance) window.sourceChartInstance.destroy();
+            
+            window.sourceChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(sources),
+                    datasets: [{
+                        label: 'Deals',
+                        data: Object.values(sources),
+                        backgroundColor: '#1a5fa0',
+                        borderColor: '#D4AF37',
+                        borderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true } } }
+            });
+        }
+        
+        function updateStageDurationChart() {
+            const ctx = document.getElementById('stageDurationChart');
+            if (!ctx) return;
+            
+            const projects = deals.filter(d => d.type === 'project');
+            const stageAvgDays = {
+                'Lead': 0,
+                'Discovery': 0,
+                'Proposal': 0,
+                'Negotiation': 0
+            };
+            
+            // Simple estimation based on current pipeline age
+            ['lead', 'discovery', 'proposal', 'negotiation'].forEach((stage, idx) => {
+                const stageProjects = projects.filter(p => p.status === stage);
+                if (stageProjects.length > 0) {
+                    const avgAge = Math.round(stageProjects.reduce((sum, p) => {
+                        const created = new Date(p.created || new Date());
+                        const age = (new Date() - created) / (1000 * 60 * 60 * 24);
+                        return sum + (age > 0 ? age : 0);
+                    }, 0) / stageProjects.length);
+                    stageAvgDays[Object.keys(stageAvgDays)[idx]] = avgAge;
+                }
+            });
+            
+            if (window.stageDurationChartInstance) window.stageDurationChartInstance.destroy();
+            
+            window.stageDurationChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(stageAvgDays),
+                    datasets: [{
+                        label: 'Avg Days in Stage',
+                        data: Object.values(stageAvgDays),
+                        borderColor: '#003366',
+                        backgroundColor: 'rgba(0, 51, 102, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#D4AF37',
+                        pointRadius: 5,
+                        pointBorderColor: '#003366',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true } }, scales: { y: { beginAtZero: true } } }
+            });
+        }
+
+        function renderProjects() {
+            const projects = deals.filter(d => d.type === 'project');
+            const stages = ['lead', 'discovery', 'proposal', 'negotiation', 'closed-project'];
+            
+            const stageGuidance = {
+                'lead': 'Clear potential fit based on size, complexity, and need. Exit: Discovery call booked with financial decision-maker.',
+                'discovery': 'Run structured discovery of close process, systems, reporting cadence, cash visibility. Exit: Agreement on 10-20K project.',
+                'proposal': 'Written SOW with clear deliverables, timeline (weeks/months), fixed fee, and business outcomes. Exit: Proposal reviewed.',
+                'negotiation': 'Clarify scope, sequencing, and payment terms. Exit: SOW signed and first payment scheduled.',
+                'closed-project': 'Deliver project with baseline metrics. Show improvements in concrete numbers at end. Exit: Final review with next steps.'
+            };
+            
+            const stageNames = {
+                'lead': 'Lead / Referral Identified',
+                'discovery': 'Discovery / Diagnostic Scoped',
+                'proposal': 'Project Proposal Sent',
+                'negotiation': 'Negotiation / Decision',
+                'closed-project': 'Closed Won - Project'
+            };
+            
+            let html = '';
+            for (const stage of stages) {
+                const stageDeals = projects.filter(d => d.status === stage);
+                
+                html += '<div class="pipeline-stage">';
+                html += '<div class="stage-header"><span>' + stageNames[stage] + '</span><span class="stage-count">' + stageDeals.length + ' deals</span></div>';
+                html += '<div class="stage-guidance">' + stageGuidance[stage] + '</div>';
+                
+                stageDeals.forEach(deal => {
+                    html += '<div class="deal-item">';
+                    html += '<div class="deal-row two-col"><div class="form-field"><label>Company</label><input type="text" value="' + deal.company + '" onchange="updateDeal(' + deal.id + ', \'company\', this.value)" placeholder="Company name"></div><div class="form-field"><label>Source</label><select onchange="updateDeal(' + deal.id + ', \'source\', this.value)"><option value="">Select...</option><option value="inbound" ' + (deal.source === 'inbound' ? 'selected' : '') + '>Inbound</option><option value="outbound" ' + (deal.source === 'outbound' ? 'selected' : '') + '>Outbound</option><option value="referral" ' + (deal.source === 'referral' ? 'selected' : '') + '>Referral</option><option value="partner" ' + (deal.source === 'partner' ? 'selected' : '') + '>Partner</option><option value="event" ' + (deal.source === 'event' ? 'selected' : '') + '>Event</option></select></div></div>';
+                    
+                    html += '<div class="deal-row four-col">';
+                    html += '<div class="form-field"><label>Status</label><select onchange="updateDeal(' + deal.id + ', \'status\', this.value)"><option value="lead" ' + (deal.status === 'lead' ? 'selected' : '') + '>Lead</option><option value="discovery" ' + (deal.status === 'discovery' ? 'selected' : '') + '>Discovery</option><option value="proposal" ' + (deal.status === 'proposal' ? 'selected' : '') + '>Proposal</option><option value="negotiation" ' + (deal.status === 'negotiation' ? 'selected' : '') + '>Negotiation</option><option value="closed-project" ' + (deal.status === 'closed-project' ? 'selected' : '') + '>Closed Won</option><option value="closed-loss" ' + (deal.status === 'closed-loss' ? 'selected' : '') + '>Closed Loss</option></select></div>';
+                    html += '<div class="form-field"><label>Project Value ($)</label><div style="display: flex; align-items: center;"><span style="margin-right: 5px;">$</span><input type="number" value="' + deal.value + '" onchange="updateDeal(' + deal.id + ', \'value\', this.value)" style="flex: 1;" step="0.01"></div></div>';
+                    html += '<div class="form-field"><label>Probability (%)</label><input type="number" value="' + (deal.probability || '') + '" onchange="updateDeal(' + deal.id + ', \'probability\', this.value)" min="0" max="100"></div>';
+                    html += '<div class="form-field"><label>Potential Retainer (/mo)</label><div style="display: flex; align-items: center;"><span style="margin-right: 5px;">$</span><input type="number" value="' + (deal.potentialRetainer || '') + '" onchange="updateDeal(' + deal.id + ', \'potentialRetainer\', this.value)" style="flex: 1;" step="0.01"></div></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row four-col">';
+                    html += '<div class="form-field"><label>Project Type</label><select onchange="updateDeal(' + deal.id + ', \'projectType\', this.value)"><option value="">Select...</option><option value="cleanup" ' + (deal.projectType === 'cleanup' ? 'selected' : '') + '>Cleanup</option><option value="close" ' + (deal.projectType === 'close' ? 'selected' : '') + '>Close Redesign</option><option value="kpi" ' + (deal.projectType === 'kpi' ? 'selected' : '') + '>KPI Setup</option><option value="cash" ' + (deal.projectType === 'cash' ? 'selected' : '') + '>Cash Model</option><option value="reporting" ' + (deal.projectType === 'reporting' ? 'selected' : '') + '>Reporting</option></select></div>';
+                    html += '<div class="form-field"><label>Next Step Date</label><input type="date" value="' + (deal.nextStepDate || '') + '" onchange="updateDeal(' + deal.id + ', \'nextStepDate\', this.value)"></div>';
+                    html += '<div class="form-field"><label>Expected Start</label><input type="date" value="' + (deal.startDate || '') + '" onchange="updateDeal(' + deal.id + ', \'startDate\', this.value)"></div>';
+                    html += '<div class="form-field"><label>Expected End</label><input type="date" value="' + deal.date + '" onchange="updateDeal(' + deal.id + ', \'date\', this.value)"></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row three-col">';
+                    html += '<div class="form-field"><label>Pain Point</label><input type="text" value="' + (deal.pain || '') + '" onchange="updateDeal(' + deal.id + ', \'pain\', this.value)" placeholder="e.g., No controller, messy close"></div>';
+                    html += '<div class="form-field"><label>Next Step Notes</label><input type="text" value="' + (deal.nextStepNotes || '') + '" onchange="updateDeal(' + deal.id + ', \'nextStepNotes\', this.value)" placeholder="What comes next"></div>';
+                    html += '<div class="form-field"><label>Decision Maker</label><input type="text" value="' + (deal.dm || '') + '" onchange="updateDeal(' + deal.id + ', \'dm\', this.value)" placeholder="Name & role"></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row full" style="margin-top: 10px;"><button class="secondary" onclick="deleteDeal(' + deal.id + ')" style="width: auto;">Delete Deal</button></div>';
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+            }
+            
+            if (projects.length === 0) {
+                html = '<div class="no-data">No projects in pipeline. <button onclick="openAddDealModal(' + String.fromCharCode(39) + 'project' + String.fromCharCode(39) + ')">Add your first project</button></div>';
+            }
+            
+            document.getElementById('projects-pipeline').innerHTML = html;
+        }
+
+        function renderRetainers() {
+            const retainers = deals.filter(d => d.type === 'retainer');
+            const stages = ['discovery', 'proposal', 'negotiation', 'closed-retainer'];
+            
+            const stageGuidance = {
+                'discovery': 'Identify maintenance risks and discuss ongoing oversight needs. Frame value of continued monitoring.',
+                'proposal': 'Present small, bounded retainer (days/weeks/months) for continued oversight. Show before/after metrics.',
+                'negotiation': 'Finalize service scope, cadence (monthly, quarterly), and payment terms. Often 3-6 month transition retainer.',
+                'closed-retainer': 'Active retainer with regular touchpoints. Track improvements, deliver value, look for upsell.'
+            };
+            
+            const stageNames = {
+                'discovery': 'In Discovery',
+                'proposal': 'Proposal Sent',
+                'negotiation': 'Negotiation',
+                'closed-retainer': 'Active Retainers'
+            };
+            
+            let html = '';
+            for (const stage of stages) {
+                const stageDeals = retainers.filter(d => d.status === stage);
+                
+                html += '<div class="pipeline-stage">';
+                html += '<div class="stage-header"><span>' + stageNames[stage] + '</span><span class="stage-count">' + stageDeals.length + ' deals</span></div>';
+                html += '<div class="stage-guidance">' + stageGuidance[stage] + '</div>';
+                
+                stageDeals.forEach(deal => {
+                    html += '<div class="deal-item">';
+                    html += '<div class="deal-row two-col"><div class="form-field"><label>Company</label><input type="text" value="' + deal.company + '" onchange="updateDeal(' + deal.id + ', \'company\', this.value)" placeholder="Company name"></div><div class="form-field"><label>Source</label><select onchange="updateDeal(' + deal.id + ', \'source\', this.value)"><option value="">Select...</option><option value="inbound" ' + (deal.source === 'inbound' ? 'selected' : '') + '>Inbound</option><option value="outbound" ' + (deal.source === 'outbound' ? 'selected' : '') + '>Outbound</option><option value="referral" ' + (deal.source === 'referral' ? 'selected' : '') + '>Referral</option><option value="partner" ' + (deal.source === 'partner' ? 'selected' : '') + '>Partner</option><option value="event" ' + (deal.source === 'event' ? 'selected' : '') + '>Event</option></select></div></div>';
+                    
+                    html += '<div class="deal-row two-col">';
+                    html += '<div class="form-field"><label>Status</label><select onchange="updateDeal(' + deal.id + ', \'status\', this.value)"><option value="discovery" ' + (deal.status === 'discovery' ? 'selected' : '') + '>Discovery</option><option value="proposal" ' + (deal.status === 'proposal' ? 'selected' : '') + '>Proposal</option><option value="negotiation" ' + (deal.status === 'negotiation' ? 'selected' : '') + '>Negotiation</option><option value="closed-retainer" ' + (deal.status === 'closed-retainer' ? 'selected' : '') + '>Active</option><option value="inactive" ' + (deal.status === 'inactive' ? 'selected' : '') + '>Inactive</option></select></div>';
+                    html += '<div class="form-field"><label>Monthly Value ($)</label><div style="display: flex; align-items: center;"><span style="margin-right: 5px;">$</span><input type="number" value="' + (deal.value || '') + '" onchange="updateDeal(' + deal.id + ', \'value\', this.value)" style="flex: 1;" step="0.01"></div></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row four-col">';
+                    html += '<div class="form-field"><label>Service Scope</label><input type="text" value="' + (deal.pain || '') + '" onchange="updateDeal(' + deal.id + ', \'pain\', this.value)" placeholder="e.g., Monthly close, cash checks"></div>';
+                    html += '<div class="form-field"><label>Next Step Date</label><input type="date" value="' + (deal.nextStepDate || '') + '" onchange="updateDeal(' + deal.id + ', \'nextStepDate\', this.value)"></div>';
+                    html += '<div class="form-field"><label>Start Date</label><input type="date" value="' + deal.date + '" onchange="updateDeal(' + deal.id + ', \'date\', this.value)"></div>';
+                    html += '<div class="form-field"><label>End Date</label><input type="date" value="' + (deal.endDate || '') + '" onchange="updateDeal(' + deal.id + ', \'endDate\', this.value)"></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row three-col">';
+                    html += '<div class="form-field"><label>Pain Point</label><input type="text" value="' + (deal.pain || '') + '" onchange="updateDeal(' + deal.id + ', \'pain\', this.value)" placeholder="e.g., Cash visibility"></div>';
+                    html += '<div class="form-field"><label>Next Step Notes</label><input type="text" value="' + (deal.nextStepNotes || '') + '" onchange="updateDeal(' + deal.id + ', \'nextStepNotes\', this.value)" placeholder="What comes next"></div>';
+                    html += '<div class="form-field"><label>Decision Maker & Role</label><input type="text" value="' + (deal.dm || '') + '" onchange="updateDeal(' + deal.id + ', \'dm\', this.value)" placeholder="Name & role"></div>';
+                    html += '</div>';
+                    
+                    html += '<div class="deal-row full" style="margin-top: 10px;"><button class="secondary" onclick="deleteDeal(' + deal.id + ')" style="width: auto;">Delete Deal</button></div>';
+                    
+                    html += '</div>';
+                });
+                
+                html += '</div>';
+            }
+            
+            if (retainers.length === 0) {
+                html = '<div class="no-data">No retainer deals in pipeline. <button onclick="openAddDealModal(' + String.fromCharCode(39) + 'retainer' + String.fromCharCode(39) + ')">Add your first retainer</button></div>';
+            }
+            
+            document.getElementById('retainers-pipeline').innerHTML = html;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadDealsFromSupabase);
+    </script>
+</body>
+</html>
